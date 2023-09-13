@@ -19,7 +19,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ProfileModal = ({ children }) => {
-  const { showProfile } = ChatState();
+  const { showProfile, setShowProfile } = ChatState();
   const navigate = useNavigate();
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -27,6 +27,8 @@ const ProfileModal = ({ children }) => {
     if (!userInfo) {
       console.log("hi");
       navigate("/");
+    } else {
+      setShowProfile(userInfo);
     }
   }, []);
 

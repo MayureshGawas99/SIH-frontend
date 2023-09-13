@@ -6,6 +6,10 @@
   /* background-image: url("./background.png");
   background-position: center; */
 }
+.scroll {
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
 .flex-g {
   flex-grow: 1;
 }
