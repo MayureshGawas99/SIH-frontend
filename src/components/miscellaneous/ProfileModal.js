@@ -17,6 +17,7 @@ import Chatpage from "../../pages/ChatPage";
 import { ChatState } from "../../Context/ChatProvider";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ProfilePage from "../UserProfile/profile-page";
 
 const ProfileModal = ({ children }) => {
   const { showProfile, setShowProfile } = ChatState();
@@ -37,18 +38,7 @@ const ProfileModal = ({ children }) => {
       {showProfile && (
         <>
           <div className="col-md-8">
-            <Image
-              borderRadius="full"
-              boxSize="150px"
-              src={showProfile.pic}
-              alt={showProfile.name}
-            />
-            <Text
-              fontSize={{ base: "28px", md: "30px" }}
-              fontFamily="Work sans"
-            >
-              Email: {showProfile.email}
-            </Text>
+            <ProfilePage/>
           </div>
           <div className="col-md-4">
             <Chatpage />

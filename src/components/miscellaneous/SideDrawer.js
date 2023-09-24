@@ -125,11 +125,21 @@ const SideDrawer = () => {
             <MenuItem
               onClick={() => {
                 setShowProfile(user);
-                navigate("/chatprofile");
+                navigate("/Profile");
               }}
             >
               My profile
             </MenuItem>
+            {user?.role === 0 && (
+              <>
+                <MenuItem onClick={() => navigate("/project-upload")}>
+                  Upload Project
+                </MenuItem>
+                <MenuItem onClick={() => navigate("/projects")}>
+                  All Project
+                </MenuItem>
+              </>
+            )}
             <MenuDivider />
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>

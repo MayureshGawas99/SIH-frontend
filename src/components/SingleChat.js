@@ -155,7 +155,7 @@ const SingleChat = () => {
                       let sender = getSenderFull(user, selectedChat.users);
                       console.log(sender);
                       setShowProfile(sender);
-                      navigate("/chatprofile");
+                      navigate("/profile");
                     }}
                   />
                 </>

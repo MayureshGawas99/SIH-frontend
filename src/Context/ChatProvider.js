@@ -6,6 +6,7 @@ const ChatContext = createContext();
 const ChatProvider = ({ children }) => {
   const [user, setUser] = useState();
   const [search, setSearch] = useState();
+  const [updateProject, setUpdateProject] = useState();
   const [tabIndex, setTabIndex] = useState(0);
   const [showProfile, setShowProfile] = useState();
   const [searchResult, setSearchResult] = useState([]);
