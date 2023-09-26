@@ -38,6 +38,7 @@ const SideDrawer = () => {
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
     setUser(null);
+    navigate("/");
     toast({
       title: "Logout Successfull.",
       status: "success",
@@ -125,7 +126,7 @@ const SideDrawer = () => {
             <MenuItem
               onClick={() => {
                 setShowProfile(user);
-                navigate("/Profile");
+                navigate("/profile");
               }}
             >
               My profile

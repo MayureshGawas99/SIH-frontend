@@ -16,22 +16,82 @@ import {
   MDBListGroup,
   MDBListGroupItem,
 } from "mdb-react-ui-kit";
-import { Button } from "@chakra-ui/react";
+import { Button, useToast } from "@chakra-ui/react";
 import { ChatState } from "../../Context/ChatProvider";
 import { useNavigate } from "react-router-dom";
+import { accessChat } from "../../pages/ChatPage";
+import axios from "axios";
 
 export default function ProfilePage() {
   const [isUser, setIsUser] = useState(true);
-  const { showProfile, setShowProfile } = ChatState();
+  const {
+    user,
+    showProfile,
+    setShowProfile,
+    setTabIndex,
+    tabIndex,
+    searchResult,
+    chats,
+    setChats,
+    selectedChat,
+    setSelectedChat,
+  } = ChatState();
   const navigate = useNavigate();
+  const toast = useToast();
+  const accessChat = async (userId) => {
+    try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/chat`,
+        { userId },
+        config
+      );
+
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+      setSelectedChat(data);
+      setTabIndex(1);
+      // onClose();
+    } catch (error) {
+      toast({
+        title: "Error fetching the chat",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+    }
+  };
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const fetchDetails = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/user/self`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
+        setShowProfile(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
     if (!userInfo) {
       console.log("hi");
       navigate("/");
     } else {
-      setShowProfile(userInfo);
+      if (!showProfile || showProfile._id === userInfo._id) {
+        fetchDetails();
+      }
     }
   }, []);
   return (
@@ -43,132 +103,69 @@ export default function ProfilePage() {
               <MDBCardBody className="text-center">
                 <div className="d-flex justify-content-center">
                   <MDBCardImage
-                    src={showProfile.pic}
+                    src={showProfile?.pic}
                     alt="profile pic"
                     className="rounded-circle"
-                    style={{ width: "150px" }}
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      objectFit: "contain",
+                    }}
                     fluid
                   />
                 </div>
-                <p className="text-muted mb-1">{showProfile.name}</p>
-                <p className="text-muted mb-4">{showProfile.organization}</p>
+                <p className="text-muted mb-1">{showProfile?.name}</p>
+                <p className="text-muted mb-4">{showProfile?.about}</p>
                 <div className="d-flex justify-content-center mb-2">
-                  {isUser ? <Button>Edit</Button> : <Button>Connect</Button>}
-                  <Button outline className="ms-1">
-                    Message
-                  </Button>
+                  {user._id === showProfile?._id ? (
+                    <Button onClick={() => navigate("/profile-update")}>
+                      Edit
+                    </Button>
+                  ) : (
+                    <Button onClick={() => accessChat(showProfile?._id)}>
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </MDBCardBody>
             </MDBCard>
 
             <MDBCard className="mb-4 ">
               <MDBCardBody>
-                <MDBCardText className="mb-4">
+                <MDBCardText className="mb-2">
                   <span className="text-primary font-italic me-1">
                     Domain Expertise
                   </span>
                 </MDBCardText>
-                <MDBCardText className="mb-1" style={{ fontSize: ".77rem" }}>
-                  Web Development
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={80} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Machine Learning
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={72} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Artificial Intellegence
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={89} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Blockchain
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={55} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Backend API
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={66} valuemin={0} valuemax={100} />
-                </MDBProgress>
+                <div className="d-flex flex-column">
+                  {showProfile?.domains.map((dom, ind) => (
+                    <button
+                      type="button"
+                      className="btn btn-outline-info my-2 btn-sm"
+                      style={{ borderRadius: "50px", color: "black" }}
+                    >
+                      {dom}
+                    </button>
+                  ))}
+                </div>
               </MDBCardBody>
             </MDBCard>
             <MDBCard className="mb-4 mb-md-0">
               <MDBCardBody>
-                <MDBCardText className="mb-4">
-                  <span className="text-primary font-italic me-1">
-                    TechStack
-                  </span>
+                <MDBCardText className="mb-2">
+                  <span className="text-primary font-italic me-1">Skills</span>
                 </MDBCardText>
-                <MDBCardText className="mb-1" style={{ fontSize: ".77rem" }}>
-                  Web Design
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={80} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Website Markup
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={72} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  One Page
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={89} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Mobile Template
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={55} valuemin={0} valuemax={100} />
-                </MDBProgress>
-
-                <MDBCardText
-                  className="mt-4 mb-1"
-                  style={{ fontSize: ".77rem" }}
-                >
-                  Backend API
-                </MDBCardText>
-                <MDBProgress className="rounded">
-                  <MDBProgressBar width={66} valuemin={0} valuemax={100} />
-                </MDBProgress>
+                <div className="d-flex flex-column">
+                  {showProfile?.techstacks.map((dom, ind) => (
+                    <button
+                      type="button"
+                      className="btn btn-outline-info my-2 btn-sm"
+                      style={{ borderRadius: "50px", color: "black" }}
+                    >
+                      {dom}
+                    </button>
+                  ))}
+                </div>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
@@ -181,7 +178,7 @@ export default function ProfilePage() {
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      {showProfile.name}
+                      {showProfile?.name}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
@@ -192,12 +189,12 @@ export default function ProfilePage() {
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      {showProfile.email}
+                      {showProfile?.email}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
-                <MDBRow>
+                {/* <MDBRow>
                   <MDBCol sm="3">
                     <MDBCardText>Phone</MDBCardText>
                   </MDBCol>
@@ -207,14 +204,14 @@ export default function ProfilePage() {
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
-                <hr />
+                <hr /> */}
                 <MDBRow>
                   <MDBCol sm="3">
                     <MDBCardText>College</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      Sardar Patel Institute of Technology
+                      {showProfile?.organization}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
@@ -231,6 +228,11 @@ export default function ProfilePage() {
             </MDBCard>
             <MDBCard className="text-primary font-italic me-1">
               <MDBCardBody>
+                <MDBCardText className="mb-4">
+                  <span className="text-primary font-italic me-1">
+                    My Projects
+                  </span>
+                </MDBCardText>
                 <MDBRow>
                   <MDBCol sm="3">
                     <MDBCardText>Project Name</MDBCardText>

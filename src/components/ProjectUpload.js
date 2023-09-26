@@ -14,6 +14,7 @@ import {
   Tag,
   TagLabel,
   TagCloseButton,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { ChatState } from "../Context/ChatProvider";
@@ -31,6 +32,7 @@ const ProjectUpload = () => {
     mentor: "",
     file: null,
   });
+  const toast = useToast();
   const { user } = ChatState();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -196,6 +198,7 @@ const ProjectUpload = () => {
       formData.contributors = JSON.stringify(
         formData.contributors.map((obj) => obj._id)
       );
+      formData.mentors = JSON.stringify(formData.mentors.map((obj) => obj._id));
       console.log(formData);
       await axios.post(
         `${process.env.REACT_APP_API_URL}/api/project/upload`,
@@ -209,6 +212,13 @@ const ProjectUpload = () => {
       );
       // Handle success
       console.log("File uploaded successfully");
+      toast({
+        title: "Project Uploaded!",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
       setFormData({
         title: "",
         domains: [], // Using an array for multiple domains

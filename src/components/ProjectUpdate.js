@@ -14,6 +14,7 @@ import {
   Tag,
   TagLabel,
   TagCloseButton,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { ChatState } from "../Context/ChatProvider";
@@ -32,10 +33,43 @@ const ProjectUpdate = () => {
     file: null,
   });
   const { user } = ChatState();
+  const toast = useToast();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [mentorQuery, setMentorQuery] = useState("");
   const [mentorResults, setMentorResults] = useState([]);
+  useEffect(() => {
+    const fetchSingleProject = async () => {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Get the value of the 'projectID' parameter and update state
+      const projectId = urlParams.get("projectId");
+
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/project/single/${projectId}`,
+        config
+      );
+      console.log(data);
+      setFormData({
+        title: data.title,
+        domains: data.domains, // Using an array for multiple domains
+        description: data.description,
+        techstacks: data.techstacks, // Using an array for multiple techstacks
+        contributors: data.contributors,
+        mentors: data.mentors,
+        organization: data.organization,
+        mentor: "",
+        file: null,
+      });
+    };
+    fetchSingleProject();
+  }, []);
+
   useEffect(() => {
     let mentorTimeoutId; // Store a reference to the timeout ID
 
@@ -185,10 +219,9 @@ const ProjectUpdate = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
     // You can handle form submission logic here
-    console.log("hi");
 
     try {
       formData.domains = JSON.stringify(formData.domains);
@@ -196,9 +229,15 @@ const ProjectUpdate = () => {
       formData.contributors = JSON.stringify(
         formData.contributors.map((obj) => obj._id)
       );
+      formData.mentors = JSON.stringify(formData.mentors.map((obj) => obj._id));
+
       console.log(formData);
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/project/upload`,
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Get the value of the 'projectID' parameter and update state
+      const projectId = urlParams.get("projectId");
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/project/update/${projectId}`,
         formData,
         {
           headers: {
@@ -209,6 +248,13 @@ const ProjectUpdate = () => {
       );
       // Handle success
       console.log("File uploaded successfully");
+      toast({
+        title: "Project Updated!",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
       setFormData({
         title: "",
         domains: [], // Using an array for multiple domains
@@ -220,11 +266,11 @@ const ProjectUpdate = () => {
         mentor: "",
         file: null,
       });
-      alert("successfully uploaded");
+      alert(" Updated successfully ");
     } catch (error) {
       // Handle error
       console.error("Error uploading file", error);
-      alert("Error uploaded");
+      alert("Error in Update");
     }
 
     /// database
@@ -234,10 +280,10 @@ const ProjectUpdate = () => {
       <Box p={4} borderWidth="1px" borderRadius="lg" boxShadow="lg" w="100%">
         <Center>
           <Heading as="h2" size="xl">
-            Project Form
+            Update Project
           </Heading>
         </Center>
-        <form onSubmit={handleSubmit}>
+        <form>
           <Stack spacing={4}>
             {/* titile */}
             <FormControl>
@@ -424,8 +470,8 @@ const ProjectUpdate = () => {
               />
             </FormControl>
 
-            <Button colorScheme="blue" onClick={handleSubmit}>
-              Submit
+            <Button colorScheme="blue" onClick={handleUpdate}>
+              Update
             </Button>
           </Stack>
         </form>

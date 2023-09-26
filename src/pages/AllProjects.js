@@ -28,7 +28,7 @@ const AllProjects = () => {
   };
 
   const handleUpdate = async (projectId) => {
-    setUpdateProject(projectId);
+    // setUpdateProject(projectId);
     navigate(`/project-update?projectId=${projectId}`);
   };
   const handleDelete = async (projectId) => {

@@ -47,6 +47,7 @@ const Chatpage = () => {
 
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);
+      setTabIndex(1);
       // onClose();
     } catch (error) {
       toast({
