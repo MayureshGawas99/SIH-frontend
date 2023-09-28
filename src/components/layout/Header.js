@@ -31,11 +31,11 @@ const Header = () => {
                 Home
               </Link>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <Link className="nav-link " aria-current="page" to="/profiles">
                 Networks
               </Link>
-            </li>
+            </li> */}
             <li className="nav-item">
               <Link className="nav-link " aria-current="page" to="/about">
                 About
@@ -46,7 +46,7 @@ const Header = () => {
                 Contact
               </Link>
             </li>
-            <li>
+            {/* <li>
               <form className="d-flex">
                 <input
                   className="form-control me-2"
@@ -58,7 +58,7 @@ const Header = () => {
                   Search
                 </button>
               </form>
-            </li>
+            </li> */}
           </ul>
           {!user && (
             <div className="d-flex gap-2">

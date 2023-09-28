@@ -18,6 +18,7 @@ const MyChats = ({}) => {
     chats,
     setChats,
     fetchAgain,
+    tabIndex,
     setTabIndex,
   } = ChatState();
   const toast = useToast();
@@ -52,7 +53,7 @@ const MyChats = ({}) => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
     // eslint-disable-next-line
-  }, [fetchAgain]);
+  }, [fetchAgain, tabIndex]);
 
   return (
     <>

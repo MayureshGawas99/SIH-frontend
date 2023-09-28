@@ -17,11 +17,12 @@ import {
   MDBListGroupItem,
 } from "mdb-react-ui-kit";
 import { Button, useToast } from "@chakra-ui/react";
-import { ChatState } from "../../Context/ChatProvider";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { ChatState } from "../Context/ChatProvider";
 
-export default function ProfilePage() {
+export default function ProjectProfile() {
   const [isUser, setIsUser] = useState(true);
   const {
     user,
@@ -35,22 +36,20 @@ export default function ProfilePage() {
     selectedChat,
     setSelectedChat,
   } = ChatState();
-  const [projects, setProjects] = useState([]);
+  const [project, setProject] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
-  const fetchProjects = async () => {
+  const fetchProject = async () => {
     try {
-      if (showProfile) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get("projectId");
+      if (projectId) {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/project/user-projects/${showProfile._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
+          `${process.env.REACT_APP_API_URL}/api/project/single/${projectId}`
         );
         console.log(data);
-        setProjects(data);
+        setProject(data);
       }
     } catch (error) {
       console.log(error);
@@ -85,36 +84,54 @@ export default function ProfilePage() {
       });
     }
   };
+
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = "downloaded-file.pdf"; // Set the desired download filename
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    const fetchDetails = async () => {
-      try {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/user/self`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
-        setShowProfile(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     if (!userInfo) {
-      console.log("hi");
       navigate("/");
     } else {
-      if (!showProfile || showProfile._id === userInfo._id) {
-        fetchDetails();
-      }
+      fetchProject();
     }
   }, []);
   useEffect(() => {
-    fetchProjects();
-  }, [showProfile]);
+    const fetchPdf = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get("projectId");
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/project/file/${projectId}`,
+          {
+            responseType: "blob",
+          }
+        );
+        console.log("data", response);
+        if (response.status === 200) {
+          const pdfBlob = new Blob([response.data], {
+            type: "application/pdf",
+          });
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          setPdfUrl(pdfUrl);
+        } else {
+          console.error("Failed to fetch PDF");
+        }
+      } catch (error) {
+        console.error("Error fetching PDF:", error);
+        setPdfUrl(null);
+      }
+    };
+
+    fetchPdf();
+  }, []);
 
   return (
     <section style={{ backgroundColor: "#eee" }}>
@@ -125,7 +142,7 @@ export default function ProfilePage() {
               <MDBCardBody className="text-center">
                 <div className="d-flex justify-content-center">
                   <MDBCardImage
-                    src={showProfile?.pic}
+                    src={project?.img}
                     alt="profile pic"
                     className="rounded-circle"
                     style={{
@@ -136,18 +153,10 @@ export default function ProfilePage() {
                     fluid
                   />
                 </div>
-                <p className="text-muted mb-1">{showProfile?.name}</p>
-                <p className="text-muted mb-4">{showProfile?.about}</p>
+                <p className="text-muted mb-1">{project?.title}</p>
+                {/* <p className="text-muted mb-4">{showProfile?.about}</p> */}
                 <div className="d-flex justify-content-center mb-2">
-                  {user._id === showProfile?._id ? (
-                    <Button onClick={() => navigate("/profile-update")}>
-                      Edit
-                    </Button>
-                  ) : (
-                    <Button onClick={() => accessChat(showProfile?._id)}>
-                      Connect
-                    </Button>
-                  )}
+                  <Button onClick={handleDownload}>Download</Button>
                 </div>
               </MDBCardBody>
             </MDBCard>
@@ -160,7 +169,7 @@ export default function ProfilePage() {
                   </span>
                 </MDBCardText>
                 <div className="d-flex flex-column">
-                  {showProfile?.domains.map((dom, ind) => (
+                  {project?.domains?.map((dom, ind) => (
                     <button
                       type="button"
                       className="btn btn-outline-info my-2 btn-sm"
@@ -177,10 +186,12 @@ export default function ProfilePage() {
             <MDBCard className="mb-4 mb-md-0">
               <MDBCardBody>
                 <MDBCardText className="mb-2">
-                  <span className="text-primary font-italic me-1">Skills</span>
+                  <span className="text-primary font-italic me-1">
+                    Technology Used
+                  </span>
                 </MDBCardText>
                 <div className="d-flex flex-column">
-                  {showProfile?.techstacks.map((dom, ind) => (
+                  {project?.techstacks?.map((dom, ind) => (
                     <button
                       type="button"
                       className="btn btn-outline-info my-2 btn-sm"
@@ -199,85 +210,75 @@ export default function ProfilePage() {
               <MDBCardBody>
                 <MDBRow>
                   <MDBCol sm="3">
-                    <MDBCardText>Full Name</MDBCardText>
+                    <MDBCardText>Title</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      {showProfile?.name}
+                      {project?.title}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
                 <MDBRow>
                   <MDBCol sm="3">
-                    <MDBCardText>Email</MDBCardText>
+                    <MDBCardText>Description</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      {showProfile?.email}
+                      {project?.description}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
-                {/* <MDBRow>
-                  <MDBCol sm="3">
-                    <MDBCardText>Phone</MDBCardText>
-                  </MDBCol>
-                  <MDBCol sm="9">
-                    <MDBCardText className="text-muted">
-                      (+91) 7972058909
-                    </MDBCardText>
-                  </MDBCol>
-                </MDBRow>
-                <hr /> */}
+
                 <MDBRow>
                   <MDBCol sm="3">
                     <MDBCardText>College</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">
-                      {showProfile?.organization}
+                      {project?.organization}
                     </MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
-                <MDBRow>
+                {/* <MDBRow>
                   <MDBCol sm="3">
                     <MDBCardText>Graduation Year</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
                     <MDBCardText className="text-muted">Final Year</MDBCardText>
                   </MDBCol>
-                </MDBRow>
+                </MDBRow> */}
               </MDBCardBody>
             </MDBCard>
-            <MDBCard className="text-primary font-italic me-1">
+            <MDBCard className="text-primary font-italic me-1 mb-4">
               <MDBCardBody>
                 <MDBCardText className="mb-4">
                   <span className="text-primary font-italic me-1">
-                    My Projects
+                    Contributors
                   </span>
                 </MDBCardText>
-                {projects.length ? (
-                  projects.map((pro) => (
-                    <MDBRow className="p-2" key={pro._id}>
-                      <div key={pro._id} className="card mb-3">
+                {project?.contributors?.length ? (
+                  project?.contributors?.map((con) => (
+                    <MDBRow className="p-2" key={con._id}>
+                      <div className="card mb-3">
                         <div className="card-body">
                           <div className="d-flex justify-content-between ">
                             <div className="d-flex flex-row align-items-center">
                               <div>
                                 <img
-                                  src={pro.img}
+                                  src={con.pic}
                                   className="img-fluid rounded-3"
                                   alt="Shopping item"
                                   style={{ width: 100 }}
                                 />
                               </div>
                               <div className="ms-3 d-flex gap-2 flex-column">
-                                <h5>{pro.title}</h5>
-                                <p className="small mb-0">{pro.description}</p>
+                                <h5>{con.name}</h5>
+                                <p className="small mb-0">{con.organization}</p>
                                 <div>
-                                  {pro.techstacks.map((tech, ind) => (
+                                  {con.techstacks.map((tech, ind) => (
                                     <button
                                       type="button"
                                       className="btn btn-outline-info me-2 btn-sm"
@@ -295,11 +296,12 @@ export default function ProfilePage() {
                             </div>
                             <div className="d-flex flex-row align-items-center">
                               <Button
-                                onClick={() =>
-                                  navigate(`/project-view?projectId=${pro._id}`)
-                                }
+                                onClick={() => {
+                                  setShowProfile(con);
+                                  navigate("/profile");
+                                }}
                               >
-                                View Project
+                                View Profile
                               </Button>
                             </div>
                           </div>
@@ -308,7 +310,88 @@ export default function ProfilePage() {
                     </MDBRow>
                   ))
                 ) : (
-                  <p> No projects to show</p>
+                  <p> No Contributors to show</p>
+                )}
+              </MDBCardBody>
+            </MDBCard>
+            <MDBCard className="text-primary font-italic me-1">
+              <MDBCardBody>
+                <MDBCardText className="mb-4">
+                  <span className="text-primary font-italic me-1">Mentors</span>
+                </MDBCardText>
+                {project?.mentors?.length ? (
+                  project?.mentors?.map((con) => (
+                    <MDBRow className="p-2" key={con._id}>
+                      <div className="card mb-3">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between ">
+                            <div className="d-flex flex-row align-items-center">
+                              <div>
+                                <img
+                                  src={con.pic}
+                                  className="img-fluid rounded-3"
+                                  alt="Shopping item"
+                                  style={{ width: 100 }}
+                                />
+                              </div>
+                              <div className="ms-3 d-flex gap-2 flex-column">
+                                <h5>{con.name}</h5>
+                                <p className="small mb-0">{con.organization}</p>
+                                <div>
+                                  {con.techstacks.map((tech, ind) => (
+                                    <button
+                                      type="button"
+                                      className="btn btn-outline-info me-2 btn-sm"
+                                      style={{
+                                        borderRadius: "50px",
+                                        color: "black",
+                                      }}
+                                      key={ind}
+                                    >
+                                      {tech}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="d-flex flex-row align-items-center">
+                              <Button
+                                onClick={() => {
+                                  setShowProfile(con);
+                                  navigate("/profile");
+                                }}
+                              >
+                                View Profile
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </MDBRow>
+                  ))
+                ) : (
+                  <p> No Mentors to show</p>
+                )}
+              </MDBCardBody>
+            </MDBCard>
+            <MDBCard className="text-primary font-italic me-1">
+              <MDBCardBody>
+                <MDBCardText className="mb-4">
+                  <span className="text-primary font-italic me-1">
+                    Project Paper
+                  </span>
+                </MDBCardText>
+                {pdfUrl ? (
+                  <div>
+                    <embed
+                      src={pdfUrl}
+                      type="application/pdf"
+                      width="100%"
+                      height="500px"
+                    />
+                  </div>
+                ) : (
+                  <p>Error loading PDF.</p>
                 )}
               </MDBCardBody>
             </MDBCard>

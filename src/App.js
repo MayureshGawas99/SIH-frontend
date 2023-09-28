@@ -16,6 +16,7 @@ import Chatpage from "./pages/ChatPage";
 import AllProjects from "./pages/AllProjects";
 import ProjectUpdate from "./components/ProjectUpdate";
 import UpdateProfile from "./components/UserProfile/UpdateProfile";
+import ProjectProfile from "./components/ProjectProfile";
 
 function App() {
   const { user } = ChatState();
@@ -31,6 +32,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/project-upload" element={<ProjectUpload />} />
                 <Route path="/project-update" element={<ProjectUpdate />} />
+                <Route path="/project-view" element={<ProjectProfile />} />
                 <Route path="/projects" element={<AllProjects />} />
                 <Route path="/profile-update" element={<UpdateProfile />} />
                 <Route path="/profile" element={<ProfilePage />} />

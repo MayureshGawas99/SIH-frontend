@@ -1,10 +1,10 @@
-import { AddIcon, CheckIcon } from "@chakra-ui/icons";
+import { AddIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { Box, Stack, Text } from "@chakra-ui/layout";
 import { useToast } from "@chakra-ui/toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-import { Avatar, Button } from "@chakra-ui/react";
+import { Avatar, Button, IconButton } from "@chakra-ui/react";
 import { ChatState } from "../Context/ChatProvider";
 import { getSender, getSenderPic } from "../config/ChatLogic";
 
@@ -75,6 +75,35 @@ const ChatRequests = ({}) => {
     }
   };
 
+  const rejectRequest = async (chatId) => {
+    try {
+      console.log(user.token);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/chat/reject-chat`,
+        { chatId },
+        config
+      );
+      const newRequest = chatRequests.filter((req) => req._id !== chatId);
+      setChatRequests(newRequest);
+      // fetchChats();
+    } catch (error) {
+      toast({
+        title: "Error Occured!",
+        description: "Failed to Reject the chats",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+    }
+  };
+
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
@@ -127,12 +156,24 @@ const ChatRequests = ({}) => {
                   </Text>
                   <Text fontSize="xs">Wants to send you a message </Text>
                 </Box>
-                <Button
+                {/* <Button
                   leftIcon={<CheckIcon />}
                   colorScheme="teal"
                   variant="solid"
                   onClick={() => acceptRequest(chat._id)}
-                ></Button>
+                ></Button> */}
+                <IconButton
+                  colorScheme="blue"
+                  aria-label="Search database"
+                  icon={<CheckIcon />}
+                  onClick={() => acceptRequest(chat._id)}
+                />
+                <IconButton
+                  colorScheme="red"
+                  aria-label="Search database"
+                  icon={<CloseIcon />}
+                  onClick={() => rejectRequest(chat._id)}
+                />
               </Box>
             </>
           ))}
