@@ -29,6 +29,15 @@ export const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!name || !email || !organization || !password) {
+        return toast({
+          title: "Please fill all the fields",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-left",
+        });
+      }
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/user`,
         { email, password, organization, name }
@@ -116,7 +125,9 @@ export const Signup = () => {
           <Stack spacing="6">
             <Stack spacing="5">
               <FormControl>
-                <FormLabel htmlFor="name">Name</FormLabel>
+                <FormLabel htmlFor="name">
+                  Name<span className="text-danger">*</span>
+                </FormLabel>
                 <Input
                   id="name"
                   type="text"
@@ -124,7 +135,9 @@ export const Signup = () => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormLabel htmlFor="email">
+                  Email<span className="text-danger">*</span>
+                </FormLabel>
                 <Input
                   id="email"
                   type="email"
@@ -132,7 +145,9 @@ export const Signup = () => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel htmlFor="organization">Organization</FormLabel>
+                <FormLabel htmlFor="organization">
+                  Organization <span className="text-danger">*</span>
+                </FormLabel>
                 <Input
                   id="organization"
                   type="text"

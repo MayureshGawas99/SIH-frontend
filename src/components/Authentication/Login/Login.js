@@ -3,7 +3,6 @@ import {
   Button,
   Checkbox,
   Container,
-  Divider,
   FormControl,
   FormLabel,
   Heading,
@@ -29,6 +28,24 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!email) {
+        return toast({
+          title: "Email can't be Empty",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-left",
+        });
+      }
+      if (!password) {
+        return toast({
+          title: "Password can't be Empty",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-left",
+        });
+      }
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/user/login`,
         { email, password }
@@ -48,8 +65,7 @@ export const Login = () => {
     } catch (error) {
       console.log(error);
       toast({
-        title: "Error Occured!",
-        description: error.message,
+        title: "Invalid Credentials",
         status: "error",
         duration: 5000,
         isClosable: true,

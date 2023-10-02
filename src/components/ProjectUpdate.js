@@ -19,8 +19,10 @@ import {
 import axios from "axios";
 import { ChatState } from "../Context/ChatProvider";
 import UserListItem from "./userAvatar/UserListItem";
+import { useNavigate } from "react-router-dom";
 
 const ProjectUpdate = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     domains: [], // Using an array for multiple domains
@@ -34,6 +36,7 @@ const ProjectUpdate = () => {
   });
   const { user } = ChatState();
   const toast = useToast();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [mentorQuery, setMentorQuery] = useState("");
@@ -142,6 +145,10 @@ const ProjectUpdate = () => {
     });
   };
 
+  const handleImageChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData({
@@ -230,7 +237,16 @@ const ProjectUpdate = () => {
         formData.contributors.map((obj) => obj._id)
       );
       formData.mentors = JSON.stringify(formData.mentors.map((obj) => obj._id));
-
+      if (selectedFile) {
+        const cloudData = new FormData();
+        cloudData.append("file", selectedFile);
+        cloudData.append("upload_preset", "chat-app");
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/djuseai07/image/upload`,
+          cloudData
+        );
+        formData.img = response.data.url;
+      }
       console.log(formData);
       const urlParams = new URLSearchParams(window.location.search);
 
@@ -266,7 +282,7 @@ const ProjectUpdate = () => {
         mentor: "",
         file: null,
       });
-      alert(" Updated successfully ");
+      navigate("/projects");
     } catch (error) {
       // Handle error
       console.error("Error uploading file", error);
@@ -457,6 +473,17 @@ const ProjectUpdate = () => {
                   />
                 ))}
               </Stack>
+            </FormControl>
+
+            {/* project Image  */}
+            <FormControl>
+              <FormLabel>Profile Pic</FormLabel>
+              <Input
+                type="file"
+                name="img"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
             </FormControl>
 
             {/* project DOc  */}

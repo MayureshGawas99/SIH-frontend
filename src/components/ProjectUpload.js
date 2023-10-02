@@ -2,13 +2,11 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  ChakraProvider,
   FormControl,
   FormLabel,
   Input,
   Textarea,
   Stack,
-  Select,
   Center,
   Heading,
   Tag,
@@ -19,8 +17,10 @@ import {
 import axios from "axios";
 import { ChatState } from "../Context/ChatProvider";
 import UserListItem from "./userAvatar/UserListItem";
+import { useNavigate } from "react-router-dom";
 
 const ProjectUpload = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     domains: [], // Using an array for multiple domains
@@ -30,6 +30,7 @@ const ProjectUpload = () => {
     mentors: [],
     organization: "",
     mentor: "",
+    img: "",
     file: null,
   });
   const toast = useToast();
@@ -38,6 +39,7 @@ const ProjectUpload = () => {
   const [results, setResults] = useState([]);
   const [mentorQuery, setMentorQuery] = useState("");
   const [mentorResults, setMentorResults] = useState([]);
+  const navigate = useNavigate();
   useEffect(() => {
     let mentorTimeoutId; // Store a reference to the timeout ID
 
@@ -108,6 +110,10 @@ const ProjectUpload = () => {
       ...formData,
       [name]: value,
     });
+  };
+
+  const handleImageChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleFileChange = (e) => {
@@ -190,15 +196,34 @@ const ProjectUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // You can handle form submission logic here
-    console.log("hi");
 
     try {
+      if (!formData.title || !formData.contributors || !formData.file) {
+        return toast({
+          title: "Please fill all the * fields",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-left",
+        });
+      }
       formData.domains = JSON.stringify(formData.domains);
       formData.techstacks = JSON.stringify(formData.techstacks);
       formData.contributors = JSON.stringify(
         formData.contributors.map((obj) => obj._id)
       );
       formData.mentors = JSON.stringify(formData.mentors.map((obj) => obj._id));
+      if (selectedFile) {
+        const cloudData = new FormData();
+        cloudData.append("file", selectedFile);
+        cloudData.append("upload_preset", "chat-app");
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/djuseai07/image/upload`,
+          cloudData
+        );
+        formData.img = response.data.url;
+        console.log(response.data);
+      }
       console.log(formData);
       await axios.post(
         `${process.env.REACT_APP_API_URL}/api/project/upload`,
@@ -230,7 +255,7 @@ const ProjectUpload = () => {
         mentor: "",
         file: null,
       });
-      alert("successfully uploaded");
+      navigate("/projects");
     } catch (error) {
       // Handle error
       console.error("Error uploading file", error);
@@ -249,9 +274,11 @@ const ProjectUpload = () => {
         </Center>
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
-            {/* titile */}
+            {/* title */}
             <FormControl>
-              <FormLabel>Project Title</FormLabel>
+              <FormLabel>
+                Project Title<span className="text-danger">*</span>
+              </FormLabel>
               <Input
                 type="text"
                 name="title"
@@ -339,7 +366,9 @@ const ProjectUpload = () => {
             </FormControl>
             {/* contributors */}
             <FormControl>
-              <FormLabel>Contributors</FormLabel>
+              <FormLabel>
+                Contributors <span className="text-danger">*</span>
+              </FormLabel>
               {formData.contributors.map((con, index) => (
                 <Tag
                   key={index}
@@ -423,9 +452,22 @@ const ProjectUpload = () => {
               </Stack>
             </FormControl>
 
+            {/* project Image  */}
+            <FormControl>
+              <FormLabel>Profile Pic</FormLabel>
+              <Input
+                type="file"
+                name="img"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
+            </FormControl>
+
             {/* project DOc  */}
             <FormControl>
-              <FormLabel>Project PDF</FormLabel>
+              <FormLabel>
+                Project PDF <span className="text-danger">*</span>
+              </FormLabel>
               <Input
                 type="file"
                 name="file"

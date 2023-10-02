@@ -40,6 +40,18 @@ export default function ProjectProfile() {
   const [pdfUrl, setPdfUrl] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
+  const getDate = (date) => {
+    const parsedDate = new Date(date);
+
+    // Format the date as DD-MM-YYYY
+    const formattedDate = `${parsedDate
+      .getDate()
+      .toString()
+      .padStart(2, "0")}-${(parsedDate.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${parsedDate.getFullYear()}`;
+    return formattedDate;
+  };
   const fetchProject = async () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -98,7 +110,7 @@ export default function ProjectProfile() {
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     if (!userInfo) {
-      navigate("/");
+      navigate("/login");
     } else {
       fetchProject();
     }
@@ -138,6 +150,7 @@ export default function ProjectProfile() {
       <MDBContainer className="py-5">
         <MDBRow>
           <MDBCol lg="4">
+            {/* project Info  */}
             <MDBCard className="mb-4">
               <MDBCardBody className="text-center">
                 <div className="d-flex justify-content-center">
@@ -161,6 +174,7 @@ export default function ProjectProfile() {
               </MDBCardBody>
             </MDBCard>
 
+            {/* Domain */}
             <MDBCard className="mb-4 ">
               <MDBCardBody>
                 <MDBCardText className="mb-2">
@@ -183,6 +197,7 @@ export default function ProjectProfile() {
               </MDBCardBody>
             </MDBCard>
 
+            {/* Technology  */}
             <MDBCard className="mb-4 mb-md-0">
               <MDBCardBody>
                 <MDBCardText className="mb-2">
@@ -242,14 +257,16 @@ export default function ProjectProfile() {
                   </MDBCol>
                 </MDBRow>
                 <hr />
-                {/* <MDBRow>
+                <MDBRow>
                   <MDBCol sm="3">
-                    <MDBCardText>Graduation Year</MDBCardText>
+                    <MDBCardText>Date</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
-                    <MDBCardText className="text-muted">Final Year</MDBCardText>
+                    <MDBCardText className="text-muted">
+                      {getDate(project?.createdAt)}
+                    </MDBCardText>
                   </MDBCol>
-                </MDBRow> */}
+                </MDBRow>
               </MDBCardBody>
             </MDBCard>
             <MDBCard className="text-primary font-italic me-1 mb-4">

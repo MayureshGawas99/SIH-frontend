@@ -7,14 +7,6 @@ import {
   MDBCardText,
   MDBCardBody,
   MDBCardImage,
-  MDBBtn,
-  MDBBreadcrumb,
-  MDBBreadcrumbItem,
-  MDBProgress,
-  MDBProgressBar,
-  MDBIcon,
-  MDBListGroup,
-  MDBListGroupItem,
 } from "mdb-react-ui-kit";
 import { Button, useToast } from "@chakra-ui/react";
 import { ChatState } from "../../Context/ChatProvider";
@@ -22,17 +14,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function ProfilePage() {
-  const [isUser, setIsUser] = useState(true);
   const {
     user,
     showProfile,
     setShowProfile,
     setTabIndex,
-    tabIndex,
-    searchResult,
     chats,
     setChats,
-    selectedChat,
     setSelectedChat,
   } = ChatState();
   const [projects, setProjects] = useState([]);

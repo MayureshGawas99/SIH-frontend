@@ -1,31 +1,44 @@
 import React from "react";
 import myImage from "../../images/projectIcon.png";
+import { Link } from "react-router-dom";
 
-const ProjectCard = ({
-  title = "New Web Dev",
-  tech = ["HTML", "CSS", "JavaScript"],
-  image = "ImageURL",
-}) => {
+const ProjectCard = ({ project }) => {
   return (
-    <div className="card" style={{ width: "15rem" }}>
-      <img src={myImage} className="card-img-top" alt="..." />
-      <div className="card-body">
-        <div className="mb-1">
-          {tech.map((cat) => (
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-info me-2"
-              style={{ borderRadius: "50px", color: "black", fontSize: "10px" }}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-        <h5 className="card-title">{title}</h5>
+    <div className="col-md-3">
+      <div className="card mb-3 " style={{ width: "100%" }}>
+        <img
+          src={project.img}
+          className="card-img-top"
+          alt="..."
+          style={{ height: "200px", objectFit: "cover" }}
+        />
+        <div className="card-body">
+          <div className="mb-1">
+            {project.techstacks.map((cat, ind) => (
+              <button
+                type="button"
+                key={ind}
+                className="btn btn-sm btn-outline-info me-2"
+                style={{
+                  borderRadius: "50px",
+                  color: "black",
+                  fontSize: "10px",
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <h5 className="card-title">{project.title}</h5>
+          <p className="card-text">{project.description}</p>
 
-        <a href="#" className="btn btn-primary">
-          See More
-        </a>
+          <Link
+            to={`/project-view?projectId=${project._id}`}
+            className="btn btn-primary w-100"
+          >
+            View Project
+          </Link>
+        </div>
       </div>
     </div>
   );

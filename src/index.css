@@ -9,3 +9,7 @@
 .scrollY {
   overflow-y: auto;
 }
+
+.scrollX {
+  overflow-x: auto;
+}
