@@ -25,7 +25,6 @@
 
 .background-image {
   height: 300px;
-  width: 100vw;
   background-image: url("./images/image.png");
   background-size: cover;
   display: flex;
